@@ -19,7 +19,6 @@ Err_r_A_az = 0.05; %deg
 MGtaz = 10; %dB
 PMtaz = 0.1; %s
 ATvraz = -15; %dB
-
 %CRITÈRES FINAUX
 MPtazac = 30;
 % Réponse à l'échelon
@@ -44,7 +43,6 @@ Tstazrec = 1.5; %s
 % Réponse à une parabole
 Tstazpec = 3; %s
 
-%%
 %% Fonction de transfert de base
 numAZ = [1.59e09];
 denAZ = [1 1020.51 25082.705 3102480.725 64155612.5 8.27e7 0];
@@ -60,6 +58,7 @@ figure(3)
 margin(TFe)
 figure(4)
 rlocus(TFe)
+
 %% Avance de phase / PD en az ta
 thetai = atan(-pi()/log(MP_A_az/100));
 zetaaz = cos(thetai);
@@ -71,7 +70,7 @@ wnaz  = max([wn1az,wn2az,wn3az]);
 Praz  = -zetaaz*wnaz;
 Piaz  = wnaz*sqrt(1-zetaaz^2);
 Poleaz= Praz+Piaz*1i;
-% figure(5)
+figure(5)
 % plot(Praz,Piaz,'p')
 % hold on
 % plot(Praz,-Piaz,'p')
@@ -80,18 +79,51 @@ Poleaz= Praz+Piaz*1i;
 dphiaz = 360+(-180-rad2deg(angle(polyval(numAZ,Poleaz)))+rad2deg(angle(polyval(denAZ,Poleaz))));
 phivaz = 180-rad2deg(angle(Poleaz));
 alpha  = 180-phivaz;
-phizaz = (alpha+dphi)/2;
-phipaz =(alpha-dphi)/2;
+phizaz = (alpha+dphiaz)/2;
+phipaz =(alpha-dphiaz)/2;
 %Poles et zero voulu
-Zaz = Praz-Piaz/tand(phizaz);
-Paz = Praz-Piaz/tand(phipaz);
+Zaz = Praz-(Piaz/tand(phizaz));
+Paz = Praz-(Piaz/tand(phipaz));
 numZaz = [1 -Zaz];
 denPaz = [1 -Paz];
 TfZPaz = tf(numZaz,denPaz);
-% plot(Praz,Piaz,'p')
-% hold on
-% plot(Praz,-Piaz,'p')
-% rlocus(TfZPaz*TFaz)
-% figure()
-% margin(TfZPaz*TFaz)
-
+Kaaz = 1/abs(((polyval(numZaz,Poleaz)/polyval(denPaz,Poleaz))*(polyval(numAZ,Poleaz)/polyval(denAZ,Poleaz))));
+plot(Praz,Piaz,'p')
+hold on
+plot(Praz,-Piaz,'p')
+rlocus(Kaaz*TfZPaz*TFaz)
+figure(6)
+margin(Kaaz*TfZPaz*TFaz);
+temps = linspace(0,2,100000);
+%test = lsim(Kaaz*TfZPaz*TFaz,temps,temps);
+TFfazf = feedback(Kaaz*TfZPaz*TFaz,1);
+figure(7)
+lsim(TFfazf,ones(size(temps)),temps);
+hold on 
+plot(temps,1.02*ones(size(temps)),'-.b')
+plot(temps,0.98*ones(size(temps)),'-.b')
+plot(temps,1.25*ones(size(temps)),'-.b')
+[numapaz,denapaz] = tfdata(Kaaz*TfZPaz*TFaz,'v');
+denapaz = denapaz(1:7);
+Kvelaz = abs((polyval(numapaz,0)/polyval(denapaz,0)));
+errper = 1/Kvelaz;
+[GM,PM,Wp,Wg] = margin(Kaaz*TfZPaz*TFaz);
+PMaz = PMtaz*(180/pi)*Wg;
+%% PI
+Ketaz = (1/Err_r_A_az)/Kvelaz;
+PZpiaz = Praz/200;
+PPpiaz = PZpiaz/Ketaz;
+numpiZaz = [1 -PZpiaz];
+denpiPaz = [1 -PPpiaz];
+TfZPiaz = tf(numpiZaz,denpiPaz);
+Kraz = 1/abs(((polyval(numpiZaz,Poleaz)/polyval(denpiPaz,Poleaz))*(polyval(numapaz,Poleaz)/polyval(denapaz,Poleaz))));
+TFfazpi = feedback(Kaaz*TfZPaz*TFaz*Kraz*TfZPiaz,1);
+figure()
+margin(Kaaz*TfZPaz*TFaz*Kraz*TfZPiaz)
+figure()
+plot(Praz,Piaz,'p')
+hold on
+plot(Praz,-Piaz,'p')
+rlocus(Kaaz*TfZPaz*TFaz*Kraz*TfZPiaz)
+figure()
+step(TFfazpi)
