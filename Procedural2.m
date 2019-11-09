@@ -21,6 +21,7 @@ clc
 num = [1 4];
 den = [1 8 3 0];
 FTBO = tf(num,den);
+
 PM = 50;
 BW = 5.2;
 err_ramp = 0.005;
