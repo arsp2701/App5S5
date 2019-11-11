@@ -21,6 +21,8 @@ clc
 num = [1 4];
 den = [1 8 3 0];
 FTBO = tf(num,den);
+margin(FTBO)
+
 PM = 50;
 BW = 5.2;
 err_ramp = 0.005;
@@ -52,8 +54,10 @@ den_c = [1 -pole_c];
 Gc = tf(num_c,den_c);
 
 FTBO_Av = Ka*Gc*FTBO;
-
-margin(FTBO_Av)
+% 
+% bode(filtre)
+% figure
+% margin(FTBO_Av*filtre)
 
 %% Retard de phase avec
 
@@ -77,7 +81,7 @@ den_r = [1 -pole_c_r];
 comp_r = tf(num_r,den_r);
 Kr = k_star/(beta*abs((1i*Wg-zero_c_r)/(1i*Wg-pole_c_r)));
 
-margin(FTBO_Av*Kr*comp_r)
+% margin(FTBO_Av*Kr*comp_r)
 
 
 
@@ -98,7 +102,7 @@ K_vel = 4/3;
 
 K_v = K_vel_v/K_vel;
 
-margin(FTBO*K_v)
+% margin(FTBO*K_v)
 
 
 
