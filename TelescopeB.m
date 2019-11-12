@@ -35,7 +35,7 @@ K_star = 1/abs(polyval(numAZ,Wg*1i)/polyval(denAZ,Wg*1i));
 
 [GM_o,PM_o,Wp_o,Wg_o] = margin(K_star*FTBO);
 
-delta_phi = PM - PM_o+25;
+delta_phi = PM - PM_o+18;
 
 alpha = (1-sind(delta_phi))/(1+sind(delta_phi));
 
@@ -76,25 +76,34 @@ FTBO_Av_Re = FTBO_Av*retard;
 % figure(69)
 %  margin(FTBO_Av_Re)
 
-[num_F, den_F] = butter(1,[45 65],'stop','s');
+[num_F, den_F] = butter(1,[50 60],'stop','s');
+
 filter = tf(num_F,den_F);
-% figure
+figure(1)
 margin(FTBO_Av_Re*filter)
 % 
-% x = linspace(0,100,10000)';
+x = linspace(0,15,10000)';
 % x2 = 1.02*x;
 % x3 = .98*x;
 % % 
-% feed = feedback(FTBO_Av_Re*filter,1);
-% y = lsim(feed,x,x);
-% z = x-y;
-% figure(8700)
-% plot(x,z);
+feed = feedback(FTBO_Av_Re*filter,1);
+y = lsim(feed,x,x);
+z = x-y;
+figure(2)
+plot(x,z);
+title('Erreur en régime permanent à une rampe unitaire, B, Azimut')
 % hold on
 % % plot(x,x2)
 % % plot(x,x3)
 % legend
 
+% calcul de la marge restante 
+w5 = 1.02962; % vu sur le margin
+[mag,phase] = bode(FTBO_Av_Re*filter,w5);
+marge_phase = phase-180;
+retard_max = marge_phase*pi/180/w5;
+
+[a,b,c,d]=margin(FTBO_Av_Re*filter);
 
 %% Fonction de transfert de base en élévation
 numEL  = [7.95e09];
@@ -117,7 +126,7 @@ K_star = 1/abs(polyval(numEL,Wg*1i)/polyval(denEL,Wg*1i));
 
 [GM_o,PM_o,Wp_o,Wg_o] = margin(K_star*FTBO);
 
-delta_phi = PM - PM_o+15;
+delta_phi = PM - PM_o+10;
 
 alpha = (1-sind(delta_phi))/(1+sind(delta_phi));
 
@@ -134,16 +143,6 @@ den_c = [1 -pole_c];
 Gc = tf(num_c,den_c);
 
 FTBO_Av = Ka*Gc*FTBO;
-% figure
-% margin(FTBO_Av)
-
-
-% figure
-% rlocus(FTBO_Av)
-% 
-% figure
-% bode(FTBO_Av)
-
 
 % retard de phase
 Kvel_star = 1/err_r;
@@ -163,23 +162,35 @@ retard = tf([1 -zero_re],[1 -pole_re]);
 
 FTBO_Av_Re = FTBO_Av*retard;
 
-% figure(69)
-% margin(FTBO_Av_Re)
 
-x = linspace(0,100,10000)';
+[num_F, den_F] = butter(1,[113 133],'stop','s');
+
+filter = tf(num_F,den_F);
+
+
+
+
+figure(3)
+margin(FTBO_Av_Re*filter)
+
+x = linspace(0,15,10000)';
 % x2 = 1.02*x;
 % x3 = .98*x;
 % % 
-feed = feedback(FTBO_Av_Re,1);
+feed = feedback(FTBO_Av_Re*filter,1);
 y = lsim(feed,x,x);
 z = x-y;
-figure(8700)
+figure(4)
 plot(x,z);
-hold on
+% hold on
 % plot(x,x2)
 % plot(x,x3)
 
-
+% calcul de la marge restante 
+w5 = 1.3075; % vu sur le margin et vérifié avec bode w5
+[mag,phase] = bode(FTBO_Av_Re*filter,w5);
+marge_phase = phase-180;
+retard_max = marge_phase*pi/180/w5;
 
 
 
