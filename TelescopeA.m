@@ -36,7 +36,7 @@ figure(2)
 rlocus(TFaz)
 
 %% Avance de phase / PD en az ta
-temps = linspace(0,2,1000)';
+temps = linspace(0,20,1000)';
 thetai = atan(-pi()/log(MP_A_az/100));
 zetaaz = cos(thetai);
 % zetaaz = 0.608334677523174;
@@ -59,7 +59,8 @@ Poleaz= Praz+Piaz*1i;
 %Angle des poles et zero voulu
 dphiaz = 360+(-180-rad2deg(angle(polyval(numAZ,Poleaz)))+rad2deg(angle(polyval(denAZ,Poleaz))));
 phivaz = 180-rad2deg(angle(Poleaz));
-a = 15;
+c = 11;
+a = 17;
 alpha  = 180-(phivaz);
 phizaz = (alpha+(dphiaz+a))/2;
 phipaz =(alpha-(dphiaz+a))/2;
@@ -70,20 +71,23 @@ numZaz = [1 -Zaz];
 denPaz = [1 -Paz];
 TfZPaz = tf(numZaz,denPaz);
 
-Kaaz = (1.1+(5.35*0.01))/norm(((polyval(numZaz,Poleaz)/polyval(denPaz,Poleaz))*(polyval(numAZ,Poleaz)/polyval(denAZ,Poleaz))));
-[b,a] = cheby1(1,1,[49 61],'stop','s');
+Kaaz = 1+(0.1*c)/norm(((polyval(numZaz,Poleaz)/polyval(denPaz,Poleaz))*(polyval(numAZ,Poleaz)/polyval(denAZ,Poleaz))));
+[b,a] = cheby1(1,0.9,[40 75],'stop','s');
 cp = tf(b,a);
-figure()
-plot(Praz,Piaz,'p')
-hold on
-plot(Praz,-Piaz,'p')
-rlocus(Kaaz*TfZPaz*TFaz)
+% figure()
+% plot(Praz,Piaz,'p')
+% hold on
+% plot(Praz,-Piaz,'p')
+% rlocus(Kaaz*TfZPaz*TFaz)
 figure()
 margin(cp*Kaaz*TfZPaz*TFaz);
+% figure()
+% margin(Kaaz*TfZPaz*TFaz);
 [GM,PM,Wp,Wg] = margin(cp*Kaaz*TfZPaz*TFaz);
 PMaz = PMtaz*(180/pi)*Wg
+PMtazr = (PM*(pi/180))/Wg
 TFfazf = feedback(cp*Kaaz*TfZPaz*TFaz,1);
-figure()
+figure
 lsim(TFfazf,ones(size(temps)),temps);
 %step(TFfazf)
 hold on 
@@ -102,3 +106,30 @@ hold on
 plot(temps,Err_r_A_az*1.02*ones(size(temps)),'-.b')
 plot(temps,Err_r_A_az*0.98*ones(size(temps)),'-.b')
 xline(1.25);
+
+%trajectoire
+
+Profile_Tracking
+figure()
+plot(ttrk,utrk)
+title('Trajectoire réelle et suivie')
+xlabel('Temps (s)')
+ylabel('Position')
+hold on 
+trajectoire = lsim(TFfazf,utrk,ttrk);
+plot(ttrk,trajectoire)
+legend ('Trajectoire réelle','Trajectoire suivie')
+
+figure ()
+plot(ttrk,(utrk-trajectoire))
+title('Erreur entre la trajectoire voulue et l''asservissement')
+xlabel('Temps (s)')
+ylabel('Erreur valeur absolue')
+
+% figure ()
+% plot(ttrk(1),(utrk-trajectoire)./utrk)
+% ylim([-0.5 1])
+% title('Erreur entre la trajectoire voulue et l''asservissement en %')
+% xlabel('Temps (s)')
+% ylabel('Erreur (%)')
+

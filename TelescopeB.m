@@ -76,7 +76,7 @@ FTBO_Av_Re = FTBO_Av*retard;
 % figure(69)
 %  margin(FTBO_Av_Re)
 
-[num_F, den_F] = butter(1,[45 65],'stop','s');
+[num_F, den_F] = cheby1(2,1,[45 65],'stop','s');
 filter = tf(num_F,den_F);
 % figure
 margin(FTBO_Av_Re*filter)
