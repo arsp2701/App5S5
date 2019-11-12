@@ -52,9 +52,9 @@ Poleae= Prae+Piae*1i;
 dphiae = 360+(-180-rad2deg(angle(polyval(numae,Poleae)))+rad2deg(angle(polyval(denae,Poleae))));
 phivae = 180-rad2deg(angle(Poleae));
 alpha  = 180-(phivae);
-
-phizae = (alpha+(dphiae+17))/2; % 13
-phipae =(alpha-(dphiae+17))/2;
+ac = 17;
+phizae = (alpha+(dphiae+ac))/2; % 13
+phipae =(alpha-(dphiae+ac))/2;
 %Poles et zero voulu
 Zae = Prae-(Piae/tand(phizae));
 Pae = Prae-(Piae/tand(phipae));
@@ -139,7 +139,7 @@ xline(3);
 %trajectoire
 
 Profile_Tracking
-figure(8)
+figure()
 plot(ttrk,utrk)
 title('Trajectoire réelle et suivie')
 xlabel('Temps (s)')
@@ -149,15 +149,30 @@ trajectoire = lsim(TFfaepi,utrk,ttrk);
 plot(ttrk,trajectoire)
 legend ('Trajectoire réelle','Trajectoire suivie')
 
-figure (9)
+figure ()
 plot(ttrk,(utrk-trajectoire))
 title('Erreur entre la trajectoire voulue et l''asservissement')
 xlabel('Temps (s)')
 ylabel('Erreur valeur absolue')
 
-figure (10)
+figure ()
 plot(ttrk,(utrk-trajectoire)./utrk)
 ylim([-0.5 1])
 title('Erreur entre la trajectoire voulue et l''asservissement en %')
 xlabel('Temps (s)')
 ylabel('Erreur (%)')
+%%
+disp(['zeta = ', num2str(zetaae)])
+disp(['Wn = ',num2str(wnae)])
+disp(['Pôles désirés = ', num2str(Prae),' ± ',num2str(Piae)])
+disp(['Delta phi calculé = ', num2str(dphiae), 'compenser par: ',num2str(ac)])
+disp(['Fonction de transfert compensateur total (avec coupe bande) = '])
+cp*Kaae*TfZPae*Krae*TfZPiae
+disp(['Fonction de transfert avance de phase = '])
+Kaae*TfZPae
+disp(['Fonction de transfert retard de phase = '])
+Krae*TfZPiae
+disp(['Fonction de transfert coupe bande = '])
+cp
+disp(['Fonction de transfert total (avec coupe bande) = '])
+cp*Kaae*TfZPae*TFae*Krae*TfZPiae
